@@ -5,3 +5,8 @@ dist/
 build/
 *.log
 .DS_Store
+.agents/
+.claude/
+.cursor/
+.devin/
+prisma.config.ts
