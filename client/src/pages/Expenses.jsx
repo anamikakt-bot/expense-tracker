@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
+import { EditIcon, TrashIcon } from '../components/ThemeIcons';
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
@@ -103,7 +104,7 @@ export default function Expenses() {
           onChange={(e) => setNewCategory(e.target.value)}
           style={{ ...inputStyle, flex: 1 }}
           />
-          <button type="submit" style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--accent-green)', color: '#fff' }}>
+          <button type="submit" className="icon-btn" style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--accent-green)', color: '#fff' }}>
             Add Category
           </button>
         </form>
@@ -164,14 +165,15 @@ export default function Expenses() {
             onChange={(e) => setForm({ ...form, date: e.target.value })}
             style={inputStyle}
           />
-          <button type="submit" style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--accent-green)', color: '#fff' }}>
+          <button type="submit" className="icon-btn" style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--accent-green)', color: '#fff' }}>
             {editingId ? 'Update' : 'Add'}
           </button>
           {editingId && (
             <button
               type="button"
               onClick={() => { setEditingId(null); setForm({ amount: '', description: '', categoryId: '', type: 'EXPENSE', date: '' }); }}
-              style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)' }}
+              className="icon-btn"
+              style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             >
               Cancel
             </button>
@@ -230,8 +232,12 @@ export default function Expenses() {
                 <p style={{ margin: 0, fontWeight: 600, color: exp.type === 'INCOME' ? 'var(--accent-green)' : 'var(--accent-terracotta)' }}>
                   {exp.type === 'INCOME' ? '+' : '-'}₹{exp.amount.toLocaleString()}
                 </p>
-                <button onClick={() => handleEdit(exp)} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}>✏️</button>
-                <button onClick={() => handleDelete(exp.id)} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}>🗑️</button>
+                <button onClick={() => handleEdit(exp)}  className="icon-btn" style={{ border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex' }}>
+                  <EditIcon />
+                </button>
+                <button onClick={() => handleDelete(exp.id)} className="icon-btn" style={{ border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex' }}>
+                  <TrashIcon />
+                </button>
               </div>
             </div>
           ))

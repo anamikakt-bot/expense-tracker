@@ -1,6 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { SunIcon, MoonIcon } from './ThemeIcons';
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -44,33 +45,29 @@ export default function Layout() {
           ))}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <button
-            onClick={toggleTheme}
-            style={{
-              background: 'rgba(255,255,255,0.1)',
-              color: '#F7F5F0',
-              border: 'none',
-              borderRadius: '10px',
-              padding: '0.6rem',
-            }}
+          <button 
+          onClick={toggleTheme}
+          className="sidebar-btn"
           >
-            {theme === 'light' ? '🌙 Dark mode' : '☀️ Light mode'}
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            lineHeight: 1,
+          }}>
+            {theme === 'light' ? <MoonIcon /> : <SunIcon />}
+            <span style={{ lineHeight: '18px' }}>{theme === 'light' ? 'Dark mode' : 'Light mode'}</span>
+          </span>
+        </button>
+        {user && (
+          <button 
+          onClick={logout}
+          className="sidebar-btn sidebar-btn-outline"
+          >
+            Logout
           </button>
-          {user && (
-            <button
-              onClick={logout}
-              style={{
-                background: 'transparent',
-                color: '#F7F5F0',
-                border: '1px solid rgba(255,255,255,0.3)',
-                borderRadius: '10px',
-                padding: '0.6rem',
-              }}
-            >
-              Logout
-            </button>
-          )}
-        </div>
+        )}
+      </div>
       </nav>
       <main style={{ flex: 1, padding: '2.5rem', background: 'var(--bg-primary)' }}>
         <Outlet />

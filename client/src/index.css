@@ -12,6 +12,7 @@
   --accent-terracotta-light: #FBEAE3;
   --border-color: #E5E2DA;
   --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  --icon-hover-bg: rgba(44, 59, 46, 0.1);
 }
 
 [data-theme='dark'] {
@@ -26,6 +27,7 @@
   --accent-terracotta-light: #33241F;
   --border-color: #2E3133;
   --shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --icon-hover-bg: rgba(245, 240, 230, 0.12);
 }
 
 * {
@@ -55,4 +57,37 @@ h1, h2, h3 {
 button {
   cursor: pointer;
   font-family: 'Inter', sans-serif;
+}
+.icon-btn {
+  transition: background-color 0.15s ease;
+  border-radius: 6px;
+  padding: 0.35rem;
+}
+
+.icon-btn:hover {
+  background-color: var(--icon-hover-bg);
+}
+
+.sidebar-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  color: #F7F5F0;
+  transition: background-color 0.15s ease;
+}
+
+.sidebar-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.sidebar-btn-outline {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.sidebar-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
 }

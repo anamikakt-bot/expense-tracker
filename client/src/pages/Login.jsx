@@ -49,7 +49,7 @@ export default function Login() {
           />
         </div>
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" disabled={loading} style={{ width: '100%', padding: '0.5rem' }}>
+        <button type="submit" disabled={loading} className="icon-btn" style={{ width: '100%', padding: '0.5rem' }}>
           {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
