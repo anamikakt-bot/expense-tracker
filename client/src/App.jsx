@@ -9,6 +9,8 @@ import Expenses from './pages/Expenses';
 import Budgets from './pages/Budgets';
 import AuthPage from './pages/AuthPage';
 import Settings from './pages/Settings';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 
 function ProtectedRoute({ children }) {
@@ -23,6 +25,8 @@ function AppRoutes() {
       <Route path="/" element={<Navigate to="/dashboard" />} />
       <Route path="/login" element={<AuthPage />} />
       <Route path="/register" element={<AuthPage />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route
         element={
           <ProtectedRoute>

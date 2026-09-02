@@ -13,6 +13,8 @@ model User {
   password  String
   role      Role     @default(USER)
   createdAt DateTime @default(now())
+  resetToken       String?
+  resetTokenExpiry DateTime?
 
   categories Category[]
   expenses   Expense[]

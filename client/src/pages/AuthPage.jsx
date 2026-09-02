@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Logo } from '../components/ThemeIcons';
 
@@ -92,6 +92,13 @@ export default function AuthPage() {
                 minLength={6}
               />
             </div>
+            {!isRegister && (
+              <p style={{ textAlign: 'right', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+                <Link to="/forgot-password" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                Forgot password?
+                </Link>
+              </p>
+            )}
 
             {error && <p style={{ color: '#D9534F', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
 
