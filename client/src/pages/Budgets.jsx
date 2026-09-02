@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import { EditIcon, TrashIcon } from '../components/ThemeIcons';
+import { useToast } from '../context/ToastContext';
 
 const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -10,6 +11,7 @@ export default function Budgets() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { showToast } = useToast();
 
   const now = new Date();
   const [form, setForm] = useState({
@@ -60,8 +62,10 @@ export default function Budgets() {
       const payload = { ...form, categoryId: form.categoryId || null };
       if (editingId) {
         await api.put(`/budgets/${editingId}`, payload);
+        showToast('Budget updated');
       } else {
         await api.post('/budgets', payload);
+        showToast('Budget created');
       }
       setForm({ month: now.getMonth() + 1, year: now.getFullYear(), limitAmount: '', categoryId: '' });
       setEditingId(null);
@@ -82,17 +86,41 @@ export default function Budgets() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this budget?')) return;
-    await api.delete(`/budgets/${id}`);
-    fetchAll();
-  };
+  if (!window.confirm('Delete this budget?')) return;
+  await api.delete(`/budgets/${id}`);
+  showToast('Budget deleted');
+  fetchAll();
+};
 
   const inputStyle = { padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-primary)' };
+  const currentMonthBudgets = budgets.filter(
+  (b) => b.month === now.getMonth() + 1 && b.year === now.getFullYear()
+);
+const totalBudgeted = currentMonthBudgets.reduce((sum, b) => sum + b.limitAmount, 0);
+const totalSpent = currentMonthBudgets.reduce((sum, b) => sum + getSpentForBudget(b), 0);
+const totalRemaining = totalBudgeted - totalSpent;
 
   return (
     <div>
       <h1 style={{ marginBottom: '1.5rem' }}>Budgets</h1>
-
+      <div className="card" style={{ marginBottom: '1.5rem' }}>
+  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0 0 0.75rem' }}>
+    {monthNames[now.getMonth()]} {now.getFullYear()}
+  </p>
+  <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', fontSize: '1rem' }}>
+    <span>
+      <strong style={{ color: 'var(--accent-terracotta)' }}>₹{totalSpent.toLocaleString()}</strong> spent
+    </span>
+    <span>
+      <strong>₹{totalBudgeted.toLocaleString()}</strong> budgeted
+    </span>
+    <span>
+      <strong style={{ color: totalRemaining < 0 ? '#D9534F' : totalRemaining === 0 ? 'var(--text-secondary)' : 'var(--accent-green)' }}>
+        {totalRemaining < 0 ? '−₹' : '₹'}{Math.abs(totalRemaining).toLocaleString()}
+      </strong> remaining
+    </span>
+  </div>
+</div>
       <div className="card" style={{ marginBottom: '1.5rem' }}>
         <h3 style={{ marginTop: 0 }}>{editingId ? 'Edit Budget' : 'Set a Budget'}</h3>
         <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -144,58 +172,94 @@ export default function Budgets() {
           )}
         </form>
       </div>
+      {loading ? (
+  <p>Loading budgets...</p>
+) : error ? (
+  <p style={{ color: 'red' }}>{error}</p>
+) : budgets.length === 0 ? (
+  <p style={{ color: 'var(--text-secondary)' }}>No budgets set yet. Add one above.</p>
+) : (
+  (() => {
+    const grouped = {};
+    budgets.forEach((b) => {
+      const key = `${b.year}-${b.month}`;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(b);
+    });
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-        {loading ? (
-          <p>Loading budgets...</p>
-        ) : error ? (
-          <p style={{ color: 'red' }}>{error}</p>
-        ) : budgets.length === 0 ? (
-          <p style={{ color: 'var(--text-secondary)' }}>No budgets set yet. Add one above.</p>
-        ) : (
-          budgets.map((b) => {
-            const spent = getSpentForBudget(b);
-            const percent = Math.min((spent / b.limitAmount) * 100, 100);
-            const overBudget = spent > b.limitAmount;
+    const sortedKeys = Object.keys(grouped).sort((a, b) => {
+      const [yearA, monthA] = a.split('-').map(Number);
+      const [yearB, monthB] = b.split('-').map(Number);
+      return yearB - yearA || monthB - monthA;
+    });
 
-            return (
-              <div key={b.id} className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
-                  <div>
-                    <p style={{ margin: 0, fontWeight: 600 }}>{b.category ? b.category.name : 'Overall'}</p>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                      {monthNames[b.month - 1]} {b.year}
-                    </p>
+    const getMonthLabel = (year, month) => {
+      const isCurrentMonth = month === now.getMonth() + 1 && year === now.getFullYear();
+      const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const isLastMonth = month === lastMonthDate.getMonth() + 1 && year === lastMonthDate.getFullYear();
+
+      if (isCurrentMonth) return 'This month';
+      if (isLastMonth) return 'Last month';
+      return null;
+    };
+
+    return sortedKeys.map((key) => {
+      const [year, month] = key.split('-').map(Number);
+      const label = getMonthLabel(year, month);
+
+      return (
+        <div key={key} style={{ marginBottom: '2rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+            <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+              {label ? `${label} — ${monthNames[month - 1]}` : monthNames[month - 1]} {year}
+            </span>
+            <div style={{ flex: 1, height: '1px', background: 'var(--border-color)' }} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+            {grouped[key].map((b) => {
+              const spent = getSpentForBudget(b);
+              const percent = Math.min((spent / b.limitAmount) * 100, 100);
+              const overBudget = spent > b.limitAmount;
+
+              return (
+                <div key={b.id} className="card">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '0.5rem' }}>
+                    <div>
+                      <p style={{ margin: 0, fontWeight: 600 }}>{b.category ? b.category.name : 'Overall'}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => handleEdit(b)} className="icon-btn" style={{ border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex' }}>
+                        <EditIcon />
+                      </button>
+                      <button onClick={() => handleDelete(b.id)} className="icon-btn" style={{ border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex' }}>
+                        <TrashIcon />
+                      </button>
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button onClick={() => handleEdit(b)} className="icon-btn" style={{ border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex' }}>
-                      <EditIcon />
-                    </button>
-                    <button onClick={() => handleDelete(b.id)} className="icon-btn" style={{ border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex' }}>
-                      <TrashIcon />
-                    </button>
+                  <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
+                    ₹{spent.toLocaleString()} of ₹{b.limitAmount.toLocaleString()}
+                  </p>
+                  <div style={{ background: 'var(--accent-green-light)', borderRadius: '8px', height: '8px', marginBottom: '0.5rem' }}>
+                    <div style={{
+                      width: `${percent}%`,
+                      background: overBudget ? '#D9534F' : 'var(--accent-green)',
+                      height: '100%',
+                      borderRadius: '8px',
+                      transition: 'width 0.3s ease',
+                    }} />
                   </div>
+                  {overBudget && (
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#D9534F' }}>Over budget!</p>
+                  )}
                 </div>
-                <p style={{ margin: '0.5rem 0', fontSize: '0.9rem' }}>
-                  ₹{spent.toLocaleString()} of ₹{b.limitAmount.toLocaleString()}
-                </p>
-                <div style={{ background: 'var(--accent-green-light)', borderRadius: '8px', height: '8px', marginBottom: '0.5rem' }}>
-                  <div style={{
-                    width: `${percent}%`,
-                    background: overBudget ? '#D9534F' : 'var(--accent-green)',
-                    height: '100%',
-                    borderRadius: '8px',
-                    transition: 'width 0.3s ease',
-                  }} />
-                </div>
-                {overBudget && (
-                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#D9534F' }}>Over budget!</p>
-                )}
-              </div>
-            );
-          })
-        )}
-      </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    });
+  })()
+)}
     </div>
   );
 }

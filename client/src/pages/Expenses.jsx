@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import { EditIcon, TrashIcon } from '../components/ThemeIcons';
+import { useToast } from '../context/ToastContext';
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
@@ -8,6 +9,8 @@ export default function Expenses() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [newCategory, setNewCategory] = useState('');
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const { showToast } = useToast();
 
   const [form, setForm] = useState({ amount: '', description: '', categoryId: '', type: 'EXPENSE', date: '' });
   const [editingId, setEditingId] = useState(null);
@@ -46,20 +49,22 @@ export default function Expenses() {
   }, [filters]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingId) {
-        await api.put(`/expenses/${editingId}`, form);
-      } else {
-        await api.post('/expenses', form);
-      }
-      setForm({ amount: '', description: '', categoryId: '', type: 'EXPENSE', date: '' });
-      setEditingId(null);
-      fetchExpenses();
-    } catch (err) {
-      setError(err.response?.data?.error || 'Could not save expense');
+  e.preventDefault();
+  try {
+    if (editingId) {
+      await api.put(`/expenses/${editingId}`, form);
+      showToast('Expense updated');
+    } else {
+      await api.post('/expenses', form);
+      showToast('Expense added');
     }
-  };
+    setForm({ amount: '', description: '', categoryId: '', type: 'EXPENSE', date: '' });
+    setEditingId(null);
+    fetchExpenses();
+  } catch (err) {
+    setError(err.response?.data?.error || 'Could not save expense');
+  }
+};
   const handleAddCategory = async (e) => {
     e.preventDefault();
     if (!newCategory.trim()) return;
@@ -83,44 +88,24 @@ export default function Expenses() {
     });
   };
 
+  
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this expense?')) return;
-    await api.delete(`/expenses/${id}`);
-    fetchExpenses();
-  };
+  if (!window.confirm('Delete this expense?')) return;
+  await api.delete(`/expenses/${id}`);
+  showToast('Expense deleted');
+  fetchExpenses();
+};
 
   const inputStyle = { padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-primary)' };
 
   return (
     <div>
-      <h1 style={{ marginBottom: '1.5rem' }}>Expenses</h1>
-      <div className="card" style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ marginTop: 0 }}>Categories</h3>
-        <form onSubmit={handleAddCategory} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-          <input 
-          type="text"
-          placeholder="New category name"
-          value={newCategory}
-          onChange={(e) => setNewCategory(e.target.value)}
-          style={{ ...inputStyle, flex: 1 }}
-          />
-          <button type="submit" className="btn-primary" style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--accent-green)', color: '#fff' }}>
-            Add Category
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h1 style={{ margin: 0 }}>Expenses</h1>
+        <button onClick={() => setShowCategoryModal(true)} className="icon-btn" style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.9rem', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+          Manage categories
           </button>
-        </form>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          {categories.map((c) => (
-            <span key={c.id} style={{
-              padding: '0.3rem 0.75rem',
-              borderRadius: '20px',
-              background: 'var(--accent-green-light)',
-              fontSize: '0.85rem',
-            }}>
-              {c.name}
-            </span>
-          ))}
         </div>
-      </div>
 
       <div className="card" style={{ marginBottom: '1.5rem' }}>
         <h3 style={{ marginTop: 0 }}>{editingId ? 'Edit Expense' : 'Add Expense'}</h3>
@@ -181,23 +166,46 @@ export default function Expenses() {
         </form>
       </div>
 
-      <div className="card" style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-        <select
-          value={filters.categoryId}
-          onChange={(e) => setFilters({ ...filters, categoryId: e.target.value })}
-          style={inputStyle}
-        >
-          <option value="">All Categories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
+      <div className="card" style={{ marginBottom: '1.5rem' }}>
+  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+    <h3 style={{ margin: 0 }}>Filters</h3>
+    {(filters.categoryId || filters.from || filters.to) && (
+      <button
+        onClick={() => setFilters({ categoryId: '', from: '', to: '' })}
+        style={{ border: 'none', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
+      >
+        Clear filters
+      </button>
+    )}
+  </div>
+  <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+    <div>
+      <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+        Category
+      </label>
+      <select
+        value={filters.categoryId}
+        onChange={(e) => setFilters({ ...filters, categoryId: e.target.value })}
+        style={inputStyle}
+      >
+        <option value="">All</option>
+        {categories.map((c) => (
+          <option key={c.id} value={c.id}>{c.name}</option>
+        ))}
+      </select>
+    </div>
+    <div>
+      <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+        Date range
+      </label>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         <input
           type="date"
           value={filters.from}
           onChange={(e) => setFilters({ ...filters, from: e.target.value })}
           style={inputStyle}
         />
+        <span style={{ color: 'var(--text-secondary)' }}>—</span>
         <input
           type="date"
           value={filters.to}
@@ -205,6 +213,9 @@ export default function Expenses() {
           style={inputStyle}
         />
       </div>
+    </div>
+  </div>
+</div>
 
       <div className="card">
         {loading ? (
@@ -243,6 +254,57 @@ export default function Expenses() {
           ))
         )}
       </div>
+      {showCategoryModal && (
+  <div
+    onClick={() => setShowCategoryModal(false)}
+    style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0,0,0,0.4)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 100,
+    }}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="card"
+      style={{ width: '400px', maxWidth: '90vw' }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h3 style={{ margin: 0 }}>Manage categories</h3>
+        <button onClick={() => setShowCategoryModal(false)} className="icon-btn" style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+          ✕
+        </button>
+      </div>
+      <form onSubmit={handleAddCategory} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+        <input
+          type="text"
+          placeholder="New category name"
+          value={newCategory}
+          onChange={(e) => setNewCategory(e.target.value)}
+          style={{ ...inputStyle, flex: 1 }}
+        />
+        <button type="submit" className="btn-primary">
+          Add
+        </button>
+      </form>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        {categories.map((c) => (
+          <span key={c.id} style={{
+            padding: '0.3rem 0.75rem',
+            borderRadius: '20px',
+            background: 'var(--accent-green-light)',
+            fontSize: '0.85rem',
+          }}>
+            {c.name}
+          </span>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

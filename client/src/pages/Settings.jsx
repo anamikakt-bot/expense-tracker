@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 export default function Settings() {
   const { user, setUser } = useAuth();
@@ -10,7 +11,7 @@ export default function Settings() {
   const [passwordMsg, setPasswordMsg] = useState('');
   const [profileError, setProfileError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-
+  const { showToast } = useToast();
   useEffect(() => {
     if (user) setProfileForm({ name: user.name, email: user.email });
   }, [user]);
@@ -22,7 +23,7 @@ export default function Settings() {
     try {
       const res = await api.put('/auth/me', profileForm);
       if (setUser) setUser(res.data);
-      setProfileMsg('Profile updated successfully.');
+      showToast('Profile updated successfully.');
     } catch (err) {
       setProfileError(err.response?.data?.error || 'Could not update profile');
     }
@@ -41,7 +42,7 @@ export default function Settings() {
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword,
       });
-      setPasswordMsg('Password changed successfully.');
+      showToast('Password changed successfully.');
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
       setPasswordError(err.response?.data?.error || 'Could not change password');
