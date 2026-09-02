@@ -129,7 +129,7 @@ export default function Budgets() {
             required
             style={{ ...inputStyle, width: '140px' }}
           />
-          <button type="submit" className="icon-btn" style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--accent-green)', color: '#fff' }}>
+          <button type="submit" className="btn-primary" style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--accent-green)', color: '#fff' }}>
             {editingId ? 'Update' : 'Add'}
           </button>
           {editingId && (
@@ -168,10 +168,10 @@ export default function Budgets() {
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button onClick={() => handleEdit(exp)} className="icon-btn" style={{ border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex' }}>
+                    <button onClick={() => handleEdit(b)} className="icon-btn" style={{ border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex' }}>
                       <EditIcon />
                     </button>
-                    <button onClick={() => handleDelete(exp.id)} className="icon-btn" style={{ border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex' }}>
+                    <button onClick={() => handleDelete(b.id)} className="icon-btn" style={{ border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex' }}>
                       <TrashIcon />
                     </button>
                   </div>

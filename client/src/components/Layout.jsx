@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { SunIcon, MoonIcon } from './ThemeIcons';
+import { HomeIcon, WalletIcon, TargetIcon, SunIcon, MoonIcon, PowerIcon, Logo, SettingsIcon} from './ThemeIcons';
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -9,65 +9,56 @@ export default function Layout() {
   const location = useLocation();
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard' },
-    { path: '/expenses', label: 'Expenses' },
-    { path: '/budgets', label: 'Budgets' },
+    { path: '/dashboard', label: 'Dashboard', icon: <HomeIcon /> },
+    { path: '/expenses', label: 'Expenses', icon: <WalletIcon /> },
+    { path: '/budgets', label: 'Budgets', icon: <TargetIcon /> },
+  { path: '/settings', label: 'Settings', icon: <SettingsIcon /> },
   ];
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <nav style={{
-        width: '220px',
+        width: '120px',
         background: 'var(--bg-sidebar)',
-        color: '#F7F5F0',
-        padding: '2rem 1.5rem',
+        padding: '1.25rem 0.75rem',
         display: 'flex',
         flexDirection: 'column',
       }}>
-        <h2 style={{ fontFamily: "'Playfair Display', serif", marginBottom: '2.5rem' }}>
-          Expense Tracker
-        </h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+        <div className="sidebar-logo">
+          <Logo size={30} />
+        </div>
+
+        <div className="nav-stack">
           {navItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
-              style={{
-                padding: '0.75rem 1rem',
-                borderRadius: '10px',
-                color: '#F7F5F0',
-                textDecoration: 'none',
-                background: location.pathname === item.path ? 'rgba(255,255,255,0.1)' : 'transparent',
-              }}
+              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
             >
-              {item.label}
+              {item.icon}
+              {item.label.toUpperCase()}
             </Link>
           ))}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <button 
-          onClick={toggleTheme}
-          className="sidebar-btn"
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
+          <button
+            onClick={toggleTheme}
+            className="tooltip-btn"
+            data-tooltip={theme === 'light' ? 'Dark mode' : 'Light mode'}
           >
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            lineHeight: 1,
-          }}>
-            {theme === 'light' ? <MoonIcon /> : <SunIcon />}
-            <span style={{ lineHeight: '18px' }}>{theme === 'light' ? 'Dark mode' : 'Light mode'}</span>
-          </span>
-        </button>
-        {user && (
-          <button 
-          onClick={logout}
-          className="sidebar-btn sidebar-btn-outline"
-          >
-            Logout
+            {theme === 'light' ? <MoonIcon size={18} /> : <SunIcon size={18} />}
           </button>
-        )}
-      </div>
+          {user && (
+            <button
+              onClick={logout}
+              className="tooltip-btn"
+              data-tooltip="Logout"
+            >
+              <PowerIcon />
+            </button>
+          )}
+        </div>
       </nav>
       <main style={{ flex: 1, padding: '2.5rem', background: 'var(--bg-primary)' }}>
         <Outlet />

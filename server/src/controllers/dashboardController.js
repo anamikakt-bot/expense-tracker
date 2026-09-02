@@ -59,3 +59,34 @@ exports.getSummary = async (req, res) => {
     res.status(500).json({ error: 'Could not fetch dashboard summary' });
   }
 };
+exports.getTrend = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const now = new Date();
+    const months = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const start = new Date(d.getFullYear(), d.getMonth(), 1);
+      const end = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+
+      const monthExpenses = await prisma.expense.findMany({
+        where: { userId, date: { gte: start, lte: end } }
+      });
+
+      const income = monthExpenses.filter(e => e.type === 'INCOME').reduce((s, e) => s + e.amount, 0);
+      const expenses = monthExpenses.filter(e => e.type === 'EXPENSE').reduce((s, e) => s + e.amount, 0);
+
+      months.push({
+        month: d.toLocaleString('default', { month: 'short' }),
+        income,
+        expenses
+      });
+    }
+
+    res.json(months);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not fetch trend data' });
+  }
+};

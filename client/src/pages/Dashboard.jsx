@@ -1,17 +1,26 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [trend, setTrend] = useState([]);
 
-  useEffect(() => {
-    api.get('/dashboard/summary')
-      .then((res) => setData(res.data))
-      .catch(() => setError('Could not load dashboard data'))
-      .finally(() => setLoading(false));
-  }, []);
+  
+useEffect(() => {
+  Promise.all([
+    api.get('/dashboard/summary'),
+    api.get('/dashboard/trend')
+  ])
+    .then(([summaryRes, trendRes]) => {
+      setData(summaryRes.data);
+      setTrend(trendRes.data);
+    })
+    .catch(() => setError('Could not load dashboard data'))
+    .finally(() => setLoading(false));
+}, []);
 
   if (loading) return <p>Loading dashboard...</p>;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
@@ -98,6 +107,50 @@ export default function Dashboard() {
                 <p style={{ margin: 0, fontWeight: 600 }}>₹{exp.amount.toLocaleString()}</p>
               </div>
             ))
+          )}
+        </div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem', marginTop: '1.5rem' }}>
+        <div className="card">
+          <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>Income vs Expenses (6 months)</h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={trend}>
+              <XAxis dataKey="month" stroke="var(--text-secondary)" fontSize={12} />
+              <YAxis stroke="var(--text-secondary)" fontSize={12} />
+              <Tooltip
+              contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
+              />
+              <Legend />
+              <Bar dataKey="income" fill="var(--accent-green)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="expenses" fill="var(--accent-terracotta)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <div className="card">
+          <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>Category Breakdown</h3>
+          {data.categoryBreakdown.length === 0 ? (
+            <p style={{ color: 'var(--text-secondary)' }}>No expenses yet this month.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <PieChart>
+                <Pie
+                data={data.categoryBreakdown}
+                dataKey="amount"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={90}
+                label={({ name }) => name}
+                >
+                {data.categoryBreakdown.map((entry, index) => (
+                  <Cell key={entry.name} fill={['#2C3B2E', '#6B8E6E', '#E8B4A0', '#C9A88A', '#A8C0A5'][index % 5]} />
+                ))}
+                </Pie>
+                <Tooltip
+                contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           )}
         </div>
       </div>

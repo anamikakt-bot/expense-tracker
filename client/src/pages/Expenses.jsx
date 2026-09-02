@@ -104,7 +104,7 @@ export default function Expenses() {
           onChange={(e) => setNewCategory(e.target.value)}
           style={{ ...inputStyle, flex: 1 }}
           />
-          <button type="submit" className="icon-btn" style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--accent-green)', color: '#fff' }}>
+          <button type="submit" className="btn-primary" style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--accent-green)', color: '#fff' }}>
             Add Category
           </button>
         </form>
@@ -165,7 +165,7 @@ export default function Expenses() {
             onChange={(e) => setForm({ ...form, date: e.target.value })}
             style={inputStyle}
           />
-          <button type="submit" className="icon-btn" style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--accent-green)', color: '#fff' }}>
+          <button type="submit" className="btn-primary" style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--accent-green)', color: '#fff' }}>
             {editingId ? 'Update' : 'Add'}
           </button>
           {editingId && (
