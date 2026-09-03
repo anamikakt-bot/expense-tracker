@@ -8,17 +8,22 @@ export default function Layout() {
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
 
+
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: <HomeIcon /> },
-    { path: '/expenses', label: 'Expenses', icon: <WalletIcon /> },
-    { path: '/budgets', label: 'Budgets', icon: <TargetIcon /> },
+  { path: '/dashboard', label: 'Dashboard', icon: <HomeIcon /> },
+  { path: '/expenses', label: 'Expenses', icon: <WalletIcon /> },
+  { path: '/budgets', label: 'Budgets', icon: <TargetIcon /> },
   { path: '/settings', label: 'Settings', icon: <SettingsIcon /> },
-  ];
+];
+
+const adminItems = [
+  { path: '/admin', label: 'Admin', icon: <SettingsIcon /> },
+];
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <nav style={{
-        width: '120px',
+        width: '160px',
         background: 'var(--bg-sidebar)',
         padding: '1.25rem 0.75rem',
         display: 'flex',
@@ -29,17 +34,41 @@ export default function Layout() {
         </div>
 
         <div className="nav-stack">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-            >
-              {item.icon}
-              {item.label.toUpperCase()}
-            </Link>
-          ))}
-        </div>
+  {navItems.map((item) => (
+    <Link
+      key={item.path}
+      to={item.path}
+      className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+    >
+      {item.icon}
+      {item.label}
+    </Link>
+  ))}
+
+  {user?.role === 'ADMIN' && (
+    <>
+      <p style={{
+        fontSize: '0.65rem',
+        letterSpacing: '0.08em',
+        color: 'rgba(247, 245, 240, 0.4)',
+        margin: '1rem 0 0.25rem 0.5rem',
+        textTransform: 'uppercase',
+      }}>
+        Admin
+      </p>
+      {adminItems.map((item) => (
+        <Link
+          key={item.path}
+          to={item.path}
+          className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+        >
+          {item.icon}
+          {item.label}
+        </Link>
+      ))}
+    </>
+  )}
+</div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.5rem' }}>
           <button

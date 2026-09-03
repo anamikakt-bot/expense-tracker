@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { logAction } = require('../utils/auditLog');
 
 exports.getBudgets = async (req, res) => {
   try {
@@ -45,11 +46,20 @@ exports.createBudget = async (req, res) => {
       },
       include: { category: true }
     });
+    await logAction({
+  userId: req.userId,
+  userName: (await prisma.user.findUnique({ where: { id: req.userId } }))?.name,
+  action: 'Created budget',
+  entityType: 'Budget',
+  entityId: budget.id,
+  details: `₹${budget.limitAmount} · ${budget.category ? budget.category.name : 'Overall'}`,
+});
     res.status(201).json(budget);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not create budget' });
   }
+  
 };
 
 exports.updateBudget = async (req, res) => {

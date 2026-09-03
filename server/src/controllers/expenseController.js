@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const { logAction } = require('../utils/auditLog');
 
 exports.getExpenses = async (req, res) => {
   try {
@@ -50,11 +51,20 @@ exports.createExpense = async (req, res) => {
       },
       include: { category: true }
     });
+    await logAction({
+  userId: req.userId,
+  userName: (await prisma.user.findUnique({ where: { id: req.userId } }))?.name,
+  action: 'Added expense',
+  entityType: 'Expense',
+  entityId: expense.id,
+  details: `₹${expense.amount} · ${expense.category.name}`,
+});
     res.status(201).json(expense);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not create expense' });
   }
+  
 };
 
 exports.updateExpense = async (req, res) => {
@@ -95,9 +105,20 @@ exports.deleteExpense = async (req, res) => {
     }
 
     await prisma.expense.delete({ where: { id } });
-    res.json({ message: 'Expense deleted' });
+
+await logAction({
+  userId: req.userId,
+  userName: (await prisma.user.findUnique({ where: { id: req.userId } }))?.name,
+  action: 'Deleted expense',
+  entityType: 'Expense',
+  entityId: id,
+  details: `₹${existing.amount}`,
+});
+
+res.json({ message: 'Expense deleted' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Could not delete expense' });
   }
+  
 };

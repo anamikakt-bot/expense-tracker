@@ -4,6 +4,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const crypto = require('crypto');
 const { sendResetEmail } = require('../utils/mailer');
+const { logAction } = require('../utils/auditLog');
 
 const generateToken = (userId, role) => {
   return jwt.sign({ userId, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -27,6 +28,13 @@ exports.register = async (req, res) => {
     const user = await prisma.user.create({
       data: { name, email, password: hashedPassword }
     });
+    await logAction({
+  userId: user.id,
+  userName: user.name,
+  action: 'User registered',
+  entityType: 'User',
+  entityId: user.id,
+});
 
     const token = generateToken(user.id, user.role);
 

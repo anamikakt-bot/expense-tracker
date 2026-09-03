@@ -12,6 +12,7 @@ import Settings from './pages/Settings';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import { ToastProvider } from './context/ToastContext';
+import Admin from './pages/Admin';
 
 
 function ProtectedRoute({ children }) {
@@ -39,6 +40,7 @@ function AppRoutes() {
         <Route path="/expenses" element={<Expenses />} />
         <Route path="/budgets" element={<Budgets />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/admin" element={<Admin />} />
       </Route>
     </Routes>
   );

@@ -149,20 +149,18 @@ button {
 .nav-item {
   position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.75rem 0.5rem;
-  margin-bottom: 0.6px;
-  border-radius: 16px;
+  gap: 0.6rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.04);
   color: rgba(247, 245, 240, 0.75);
   text-decoration: none;
-  font-size: 0.5rem;
+  font-size: 0.8rem;
   letter-spacing: 0.02em;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, margin 0.2s ease, z-index 0s;
-  z-index: 1;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 .nav-item:hover {
