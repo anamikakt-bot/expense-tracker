@@ -2,6 +2,7 @@
 
 :root {
   --bg-primary: #F7F5F0;
+  --bg-elevated: #FFFFFF;
   --bg-card: #FFFFFF;
   --bg-sidebar: #2C3B2E;
   --text-primary: #1F241F;
@@ -16,8 +17,9 @@
 }
 
 [data-theme='dark'] {
-  --bg-primary: #16181A;
-  --bg-card: #212426;
+  --bg-primary: #151713;
+  --bg-card: #1D211C;
+  --bg-elevated: #242A23;
   --bg-sidebar: #0F1110;
   --text-primary: #EDEDED;
   --text-secondary: #9A9A9A;
@@ -25,7 +27,7 @@
   --accent-green-light: #263229;
   --accent-terracotta: #E8B4A0;
   --accent-terracotta-light: #33241F;
-  --border-color: #2E3133;
+  --border-color: #30372F;
   --shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
   --icon-hover-bg: rgba(245, 240, 230, 0.12);
 }

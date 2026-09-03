@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { HomeIcon, WalletIcon, TargetIcon, SunIcon, MoonIcon, PowerIcon, Logo, SettingsIcon} from './ThemeIcons';
+import { HomeIcon, WalletIcon, TargetIcon, SunIcon, MoonIcon, PowerIcon, Logo, SettingsIcon, ShieldIcon } from './ThemeIcons';
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -14,10 +14,11 @@ export default function Layout() {
   { path: '/expenses', label: 'Expenses', icon: <WalletIcon /> },
   { path: '/budgets', label: 'Budgets', icon: <TargetIcon /> },
   { path: '/settings', label: 'Settings', icon: <SettingsIcon /> },
+ 
 ];
 
 const adminItems = [
-  { path: '/admin', label: 'Admin', icon: <SettingsIcon /> },
+  { path: '/admin', label: 'Admin', icon: <ShieldIcon /> },
 ];
 
   return (

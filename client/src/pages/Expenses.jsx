@@ -268,10 +268,10 @@ export default function Expenses() {
     }}
   >
     <div
-      onClick={(e) => e.stopPropagation()}
-      className="card"
-      style={{ width: '400px', maxWidth: '90vw' }}
-    >
+  onClick={(e) => e.stopPropagation()}
+  className="card"
+  style={{ width: '400px', maxWidth: '90vw', background: 'var(--bg-elevated)' }}
+>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h3 style={{ margin: 0 }}>Manage categories</h3>
         <button onClick={() => setShowCategoryModal(false)} className="icon-btn" style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-secondary)' }}>

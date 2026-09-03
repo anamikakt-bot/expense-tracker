@@ -12,6 +12,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { showToast } = useToast();
+  const [confirmRoleChange, setConfirmRoleChange] = useState(null);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -37,17 +38,23 @@ export default function Admin() {
   useEffect(() => {
     fetchAll();
   }, []);
+  const requestRoleToggle = (user) => {
+  setConfirmRoleChange(user);
+};
 
-  const handleRoleToggle = async (user) => {
-    const newRole = user.role === 'ADMIN' ? 'USER' : 'ADMIN';
-    try {
-      await api.put(`/admin/users/${user.id}/role`, { role: newRole });
-      showToast(`${user.name} is now ${newRole}`);
-      fetchAll();
-    } catch (err) {
-      showToast('Could not update role', 'error');
-    }
-  };
+const confirmRoleToggle = async () => {
+  const user = confirmRoleChange;
+  const newRole = user.role === 'ADMIN' ? 'USER' : 'ADMIN';
+  try {
+    await api.put(`/admin/users/${user.id}/role`, { role: newRole });
+    showToast(`${user.name} is now ${newRole}`);
+    fetchAll();
+  } catch (err) {
+    showToast('Could not update role', 'error');
+  } finally {
+    setConfirmRoleChange(null);
+  }
+};
 
   const handleAddCategory = async (e) => {
     e.preventDefault();
@@ -81,6 +88,14 @@ export default function Admin() {
     { id: 'categories', label: 'Categories' },
     { id: 'activity', label: 'Activity Log' },
   ];
+  const getActionIcon = (action) => {
+  if (action.includes('role')) return '👤';
+  if (action.includes('category')) return '🏷';
+  if (action.includes('budget')) return '💰';
+  if (action.includes('expense')) return '🧾';
+  if (action.includes('registered')) return '✨';
+  return '•';
+};
 
   return (
     <div>
@@ -158,7 +173,7 @@ export default function Admin() {
                 }}>
                   {u.role}
                 </span>
-                <button onClick={() => handleRoleToggle(u)} className="icon-btn" style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.35rem 0.75rem', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                <button onClick={() => requestRoleToggle(u)} className="icon-btn" style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.35rem 0.75rem', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
                   Make {u.role === 'ADMIN' ? 'User' : 'Admin'}
                 </button>
               </div>
@@ -170,6 +185,9 @@ export default function Admin() {
       {tab === 'categories' && (
         <div className="card">
           <h3 style={{ marginTop: 0, marginBottom: '1rem' }}>System Categories</h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+  Deactivated categories won't appear when users create new expenses.
+</p>
           <form onSubmit={handleAddCategory} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
             <input
               type="text"
@@ -215,7 +233,7 @@ export default function Admin() {
           ) : (
             activity.map((log) => (
               <div key={log.id} style={{ padding: '0.75rem 0', borderBottom: '1px solid var(--border-color)' }}>
-                <p style={{ margin: 0, fontWeight: 600 }}>{log.action}</p>
+                <p style={{ margin: 0, fontWeight: 600 }}>{getActionIcon(log.action)} {log.action}</p>
                 {log.details && <p style={{ margin: '0.2rem 0', fontSize: '0.85rem' }}>{log.details}</p>}
                 <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                   {log.userName || 'System'} • {new Date(log.createdAt).toLocaleString()}
@@ -225,6 +243,40 @@ export default function Admin() {
           )}
         </div>
       )}
+      {confirmRoleChange && (
+  <div
+    onClick={() => setConfirmRoleChange(null)}
+    style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100,
+    }}
+  >
+    <div onClick={(e) => e.stopPropagation()} className="card" style={{ width: '420px', maxWidth: '90vw', background: 'var(--bg-elevated)' }}>
+      <h3 style={{ marginTop: 0 }}>
+        Make {confirmRoleChange.name} {confirmRoleChange.role === 'ADMIN' ? 'a regular user' : 'an administrator'}?
+      </h3>
+      {confirmRoleChange.role !== 'ADMIN' && (
+        <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+          Administrators can:
+          <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.2rem' }}>
+            <li>Manage users</li>
+            <li>Change user roles</li>
+            <li>Manage system categories</li>
+            <li>View activity logs</li>
+          </ul>
+        </div>
+      )}
+      <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+        <button onClick={() => setConfirmRoleChange(null)} style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-primary)' }}>
+          Cancel
+        </button>
+        <button onClick={confirmRoleToggle} className="btn-primary">
+          {confirmRoleChange.role === 'ADMIN' ? 'Make User' : 'Make Admin'}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
