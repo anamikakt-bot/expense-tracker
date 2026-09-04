@@ -48,6 +48,32 @@ export default function Expenses() {
     fetchExpenses();
   }, [filters]);
 
+
+  const handleExport = () => {
+  const params = new URLSearchParams();
+  if (filters.categoryId) params.append('categoryId', filters.categoryId);
+  if (filters.from) params.append('from', filters.from);
+  if (filters.to) params.append('to', filters.to);
+
+  const token = localStorage.getItem('token');
+  const url = `${import.meta.env.VITE_API_URL}/expenses/export?${params.toString()}`;
+
+  fetch(url, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then((res) => res.blob())
+    .then((blob) => {
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      a.download = `expenses-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    })
+    .catch(() => showToast('Could not export expenses', 'error'));
+};
   const handleSubmit = async (e) => {
   e.preventDefault();
   try {
@@ -101,11 +127,16 @@ export default function Expenses() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h1 style={{ margin: 0 }}>Expenses</h1>
-        <button onClick={() => setShowCategoryModal(true)} className="icon-btn" style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.9rem', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-          Manage categories
-          </button>
-        </div>
+  <h1 style={{ margin: 0 }}>Expenses</h1>
+  <div style={{ display: 'flex', gap: '0.5rem' }}>
+    <button onClick={handleExport} className="icon-btn" style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.9rem', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+      Export CSV
+    </button>
+    <button onClick={() => setShowCategoryModal(true)} className="icon-btn" style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.9rem', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+      Manage categories
+    </button>
+  </div>
+</div>
 
       <div className="card" style={{ marginBottom: '1.5rem' }}>
         <h3 style={{ marginTop: 0 }}>{editingId ? 'Edit Expense' : 'Add Expense'}</h3>

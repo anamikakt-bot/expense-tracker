@@ -22,7 +22,7 @@
   --bg-elevated: #242A23;
   --bg-sidebar: #0F1110;
   --text-primary: #EDEDED;
-  --text-secondary: #9A9A9A;
+  --text-secondary: #B8BDB4;;
   --accent-green: #6B8E6E;
   --accent-green-light: #263229;
   --accent-terracotta: #E8B4A0;
@@ -64,6 +64,8 @@ button {
   transition: background-color 0.15s ease;
   border-radius: 6px;
   padding: 0.35rem;
+  background: transparent;
+  border: none;
 }
 
 .icon-btn:hover {

@@ -122,3 +122,44 @@ res.json({ message: 'Expense deleted' });
   }
   
 };
+
+const { Parser } = require('json2csv');
+
+exports.exportExpenses = async (req, res) => {
+  try {
+    const { categoryId, from, to, type } = req.query;
+
+    const where = { userId: req.userId };
+    if (categoryId) where.categoryId = categoryId;
+    if (type) where.type = type;
+    if (from || to) {
+      where.date = {};
+      if (from) where.date.gte = new Date(from);
+      if (to) where.date.lte = new Date(to);
+    }
+
+    const expenses = await prisma.expense.findMany({
+      where,
+      include: { category: true },
+      orderBy: { date: 'desc' }
+    });
+
+    const rows = expenses.map((e) => ({
+      Date: new Date(e.date).toLocaleDateString(),
+      Description: e.description || '',
+      Category: e.category.name,
+      Type: e.type,
+      Amount: e.amount,
+    }));
+
+    const parser = new Parser({ fields: ['Date', 'Description', 'Category', 'Type', 'Amount'] });
+    const csv = parser.parse(rows);
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment(`expenses-${new Date().toISOString().split('T')[0]}.csv`);
+    res.send(csv);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Could not export expenses' });
+  }
+};
