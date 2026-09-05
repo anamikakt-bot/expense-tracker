@@ -87,7 +87,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem' }}>
+      <div className="dashboard-charts-grid" style={{ marginTop: '1.5rem' }}>
         <div className="card">
           <h3 style={{ marginTop: 0, marginBottom: '0.25rem' }}>Income vs Expenses (6 months)</h3>
           {trend.length >= 2 && (() => {
@@ -119,7 +119,7 @@ export default function Dashboard() {
               </div>
             );
           })()}
-          <ResponsiveContainer width="100%" height={220}>
+          <ResponsiveContainer width="100%" height={200}>
             <BarChart data={trend}>
               <XAxis dataKey="month" stroke="var(--text-secondary)" fontSize={12} />
               <YAxis stroke="var(--text-secondary)" fontSize={12} />
@@ -146,7 +146,7 @@ export default function Dashboard() {
             const colors = ['#2C3B2E', '#6B8E6E', '#E8B4A0', '#C9A88A', '#A8C0A5'];
 
             return (
-              <ResponsiveContainer width="100%" height={Math.max(180, withPercent.length * 50)}>
+              <ResponsiveContainer width="100%" height={Math.min(300, Math.max(180, withPercent.length * 50))}>
                 <BarChart data={withPercent} layout="vertical" margin={{ left: 10, right: 40 }}>
                   <XAxis type="number" hide />
                   <YAxis dataKey="name" type="category" width={80} stroke="var(--text-secondary)" fontSize={12} />

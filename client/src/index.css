@@ -22,7 +22,7 @@
   --bg-elevated: #242A23;
   --bg-sidebar: #0F1110;
   --text-primary: #EDEDED;
-  --text-secondary: #B8BDB4;;
+  --text-secondary: #B8BDB4;
   --accent-green: #6B8E6E;
   --accent-green-light: #263229;
   --accent-terracotta: #E8B4A0;
@@ -60,6 +60,7 @@ button {
   cursor: pointer;
   font-family: 'Inter', sans-serif;
 }
+
 .icon-btn {
   transition: background-color 0.15s ease;
   border-radius: 6px;
@@ -95,6 +96,7 @@ button {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.4);
 }
+
 .nav-link {
   display: flex;
   align-items: center;
@@ -113,6 +115,7 @@ button {
 .nav-link.active {
   background-color: rgba(255, 255, 255, 0.16);
 }
+
 .btn-primary {
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -129,12 +132,13 @@ button {
 .btn-primary:active {
   transform: scale(0.97);
 }
+
 .sidebar-logo {
   width: 70px;
   height: 70px;
   border-radius: 20px;
   background: var(--bg-sidebar);
-  color:#F7F5F0;
+  color: #F7F5F0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -344,7 +348,177 @@ button {
   border-radius: 30px;
   font-weight: 600;
 }
+
 @keyframes toast-in {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.app-sidebar {
+  width: 160px;
+  transition: width 0.2s ease;
+}
+
+.app-main {
+  flex: 1;
+  padding: 2.5rem;
+  background: var(--bg-primary);
+  min-width: 0;
+}
+
+.mobile-header {
+  display: none;
+}
+
+.drawer-overlay {
+  display: none;
+}
+
+.drawer-close {
+  display: none;
+}
+
+.dashboard-charts-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) and (min-width: 601px) {
+  .app-sidebar {
+    width: 80px;
+  }
+  .nav-item span.nav-label {
+    display: none;
+  }
+  .app-main {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .desktop-only-toggle {
+  display: none !important;
+}
+
+.mobile-header span {
+  color: #F7F5F0;
+}
+
+  .nav-item span.nav-label {
+    display: inline !important;
+  }
+
+  .dashboard-charts-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .recharts-wrapper {
+    font-size: 11px !important;
+  }
+
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg-sidebar);
+    padding: 0.85rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .app-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px !important;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 200;
+    overflow-y: auto;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .app-sidebar.drawer-open {
+    transform: translateX(0);
+  }
+
+  .drawer-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 150;
+  }
+
+  .drawer-close {
+    display: block !important;
+  }
+
+  .nav-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.4rem !important;
+    margin-top: 1rem !important;
+    align-items: stretch !important;
+  }
+
+  .nav-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 0.9rem !important;
+    padding: 0.85rem 1rem !important;
+    font-size: 0.9rem !important;
+    text-transform: none !important;
+    box-shadow: none !important;
+    width: 100%;
+  }
+
+  .nav-item.active {
+    transform: none !important;
+  }
+
+  .sidebar-logo {
+    display: flex !important;
+    margin: 0 0 1.5rem 0 !important;
+    align-self: flex-start;
+  }
+
+  .app-main {
+    padding: 1rem !important;
+  }
+
+  h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .card {
+    padding: 1rem !important;
+  }
+
+  form {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  form input,
+  form select {
+    width: 100% !important;
+    flex: none !important;
+  }
+
+  .card > div[style*="display: flex"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
 }

@@ -142,13 +142,13 @@ export default function Expenses() {
         <h3 style={{ marginTop: 0 }}>{editingId ? 'Edit Expense' : 'Add Expense'}</h3>
         <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <input
-            type="number"
-            placeholder="Amount"
-            value={form.amount}
-            onChange={(e) => setForm({ ...form, amount: e.target.value })}
-            required
-            style={{ ...inputStyle, width: '120px' }}
-          />
+  type="number"
+  placeholder="Amount"
+  value={form.amount}
+  onChange={(e) => setForm({ ...form, amount: e.target.value })}
+  required
+  style={{ ...inputStyle, width: '120px', flex: '1 1 100px' }}
+/>
           <input
             type="text"
             placeholder="Description"
