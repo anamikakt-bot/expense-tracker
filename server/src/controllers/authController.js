@@ -28,6 +28,16 @@ exports.register = async (req, res) => {
     const user = await prisma.user.create({
       data: { name, email, password: hashedPassword }
     });
+    const systemCategories = await prisma.systemCategory.findMany({
+  where: { active: true }
+});
+
+if (systemCategories.length > 0) {
+  await prisma.category.createMany({
+    data: systemCategories.map((sc) => ({ name: sc.name, userId: user.id }))
+  });
+}
+
     await logAction({
   userId: user.id,
   userName: user.name,

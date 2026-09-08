@@ -95,7 +95,6 @@ exports.getSystemCategories = async (req, res) => {
     res.status(500).json({ error: 'Could not fetch categories' });
   }
 };
-
 exports.createSystemCategory = async (req, res) => {
   try {
     const { name } = req.body;
@@ -105,13 +104,28 @@ exports.createSystemCategory = async (req, res) => {
       data: { name }
     });
 
+    const allUsers = await prisma.user.findMany({ select: { id: true } });
+    const existingCategories = await prisma.category.findMany({
+      where: { name },
+      select: { userId: true }
+    });
+    const usersWithCategory = new Set(existingCategories.map((c) => c.userId));
+
+    const usersNeedingCategory = allUsers.filter((u) => !usersWithCategory.has(u.id));
+
+    if (usersNeedingCategory.length > 0) {
+      await prisma.category.createMany({
+        data: usersNeedingCategory.map((u) => ({ name, userId: u.id }))
+      });
+    }
+
     await logAction({
       userId: req.userId,
       userName: (await prisma.user.findUnique({ where: { id: req.userId } }))?.name,
       action: 'Added system category',
       entityType: 'SystemCategory',
       entityId: category.id,
-      details: category.name,
+      details: `${category.name} · propagated to ${usersNeedingCategory.length} user(s)`,
     });
 
     res.status(201).json(category);
