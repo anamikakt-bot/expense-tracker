@@ -103,8 +103,19 @@ export default function AuthPage() {
             {error && <p style={{ color: '#D9534F', fontSize: '0.85rem', marginBottom: '1rem' }}>{error}</p>}
 
             <button type="submit" disabled={loading} className="btn-primary auth-submit-btn">
-              {loading ? '...' : isRegister ? 'Sign up' : 'Login'}
-            </button>
+  {loading ? '...' : isRegister ? 'Sign up' : 'Login'}
+</button>
+
+<p style={{ marginTop: '1rem', fontSize: '0.85rem', textAlign: 'center' }} className="mobile-auth-toggle">
+  {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
+  <button
+    type="button"
+    onClick={() => switchMode(isRegister ? 'login' : 'register')}
+    style={{ border: 'none', background: 'transparent', color: 'var(--accent-green)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}
+  >
+    {isRegister ? 'Sign in' : 'Sign up'}
+  </button>
+</p>
           </form>
         </div>
 
