@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../services/api';
 import { EditIcon, TrashIcon } from '../components/ThemeIcons';
 import { useToast } from '../context/ToastContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function Expenses() {
   const [expenses, setExpenses] = useState([]);
