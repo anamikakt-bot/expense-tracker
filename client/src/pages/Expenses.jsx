@@ -148,6 +148,8 @@ export default function Expenses() {
   value={form.amount}
   onChange={(e) => setForm({ ...form, amount: e.target.value })}
   required
+  min="0.01"
+  max="100000000"
   style={{ ...inputStyle, width: '120px', flex: '1 1 100px' }}
 />
           <input

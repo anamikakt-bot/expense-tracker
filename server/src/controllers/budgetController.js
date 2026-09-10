@@ -28,6 +28,9 @@ exports.createBudget = async (req, res) => {
     if (!month || !year || !limitAmount) {
       return res.status(400).json({ error: 'Month, year, and limit amount are required' });
     }
+    if (parseFloat(limitAmount) <= 0 || parseFloat(limitAmount) > 100000000) {
+  return res.status(400).json({ error: 'Limit amount must be between 0 and 10,00,00,000' });
+}
 
     if (categoryId) {
       const category = await prisma.category.findUnique({ where: { id: categoryId } });

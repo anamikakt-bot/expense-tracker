@@ -34,6 +34,9 @@ exports.createExpense = async (req, res) => {
     if (!amount || !categoryId) {
       return res.status(400).json({ error: 'Amount and category are required' });
     }
+    if (parseFloat(amount) <= 0 || parseFloat(amount) > 100000000) {
+  return res.status(400).json({ error: 'Amount must be between 0 and 10,00,00,000' });
+}
 
     const category = await prisma.category.findUnique({ where: { id: categoryId } });
     if (!category || category.userId !== req.userId) {
