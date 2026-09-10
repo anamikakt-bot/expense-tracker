@@ -147,9 +147,15 @@ export default function Dashboard() {
 
             return (
               <ResponsiveContainer width="100%" height={Math.min(300, Math.max(180, withPercent.length * 50))}>
-                <BarChart data={withPercent} layout="vertical" margin={{ left: 10, right: 40 }}>
+                <BarChart data={withPercent} layout="vertical" margin={{ left: 20, right: 40 }}>
                   <XAxis type="number" hide />
-                  <YAxis dataKey="name" type="category" width={80} stroke="var(--text-secondary)" fontSize={12} />
+                  <YAxis
+  dataKey="name"
+  type="category"
+  width={Math.min(140, Math.max(80, ...withPercent.map((c) => c.name.length * 7)))}
+  stroke="var(--text-secondary)"
+  fontSize={12}
+/>
                   <Tooltip
                     contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
                     formatter={(value, name, props) => [`₹${value.toLocaleString()} (${props.payload.percent}%)`, 'Amount']}
