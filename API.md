@@ -1,705 +1,298 @@
-# Expense Tracker API
+# API Documentation
 
-REST API for the Expense Tracker application.
+Base URL (local): `http://localhost:5001/api`
+Base URL (production): `https://expense-tracker-api-gf5r.onrender.com/api`
 
-The backend is built with **Node.js, Express.js, Prisma ORM, and JWT authentication**.
-
-## Base URL
-
-### Local
-
-```text
-http://localhost:5000/api
+All protected routes require a header:
+```
+Authorization: Bearer <jwt_token>
 ```
 
-### Production
-
-```text
-https://<your-backend-domain>/api
-```
-
-Replace the production URL with the deployed backend URL when available.
+Admin-only routes additionally require the authenticated user's `role` to be `ADMIN` — enforced server-side, not by the client.
 
 ---
 
-# Authentication
+## Auth
 
-Protected endpoints require a valid JWT.
+### Register
+`POST /auth/register`
+Rate limited: 10 requests / 15 min.
 
-Include the token in the request header:
-
-```http
-Authorization: Bearer <JWT_TOKEN>
+**Body**
+```json
+{ "name": "Chung chai", "email": "chai@example.com", "password": "min6chars" }
 ```
 
-Example:
-
-```bash
-curl http://localhost:5000/api/expenses \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+**Response `201`**
+```json
+{ "id": "uuid", "name": "Chung chai", "email": "chai@example.com", "role": "USER" }
 ```
-
-Admin endpoints require both authentication and administrator authorization.
+Does **not** log the user in — they're redirected to login after successful registration.
+Active system categories are automatically copied into the new user's category list.
 
 ---
 
-# API Overview
+### Login
+`POST /auth/login`
+Rate limited: 10 requests / 15 min.
 
-| Module         | Base Route        | Access                 |
-| -------------- | ----------------- | ---------------------- |
-| Health         | `/api/health`     | Public                 |
-| Authentication | `/api/auth`       | Public / Authenticated |
-| Categories     | `/api/categories` | Authenticated          |
-| Expenses       | `/api/expenses`   | Authenticated          |
-| Budgets        | `/api/budgets`    | Authenticated          |
-| Dashboard      | `/api/dashboard`  | Authenticated          |
-| Admin          | `/api/admin`      | Admin                  |
-
----
-
-# 1. Health Check
-
-## `GET /api/health`
-
-Checks whether the API server is running.
-
-### Authentication
-
-Not required.
-
-### Example
-
-```bash
-curl http://localhost:5000/api/health
+**Body**
+```json
+{ "email": "chai@example.com", "password": "min6chars" }
 ```
 
-### Response
-
+**Response `200`**
 ```json
 {
-  "status": "ok"
+  "token": "eyJhbGciOi...",
+  "user": { "id": "uuid", "name": "Chung chai", "email": "chai@example.com", "role": "USER" }
 }
 ```
 
 ---
 
-# 2. Authentication
+### Get current user
+`GET /auth/me` — protected
 
-Base route:
-
-```text
-/api/auth
-```
-
-## `POST /api/auth/register`
-
-Creates a new user account.
-
-### Authentication
-
-Not required.
-
-### Request
-
+**Response `200`**
 ```json
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "password123"
-}
+{ "id": "uuid", "name": "Chung chai", "email": "chai@example.com", "role": "USER", "createdAt": "..." }
 ```
 
 ---
 
-## `POST /api/auth/login`
+### Update profile
+`PUT /auth/me` — protected
 
-Authenticates an existing user.
-
-### Authentication
-
-Not required.
-
-### Request
-
+**Body**
 ```json
-{
-  "email": "john@example.com",
-  "password": "password123"
-}
+{ "name": "Chung C.", "email": "jane2@example.com" }
 ```
 
-### Response
+---
 
-Returns authentication information including a JWT.
+### Change password
+`PUT /auth/change-password` — protected
 
-Example:
+**Body**
+```json
+{ "currentPassword": "old", "newPassword": "new123" }
+```
 
+---
+
+### Forgot password
+`POST /auth/forgot-password`
+Rate limited: 3 requests / hour.
+
+**Body**
+```json
+{ "email": "chai@example.com" }
+```
+
+**Response `200`** (always returns the same message, regardless of whether the email exists, to avoid leaking registered emails)
+```json
+{ "message": "If that email exists, a reset link has been sent." }
+```
+Sends an email (via Resend) containing a link to `{CLIENT_URL}/reset-password/{token}`. Token expires in 1 hour.
+
+---
+
+### Reset password
+`PUT /auth/reset-password/:token`
+
+**Body**
+```json
+{ "newPassword": "newpass123" }
+```
+
+**Response `200`**
+```json
+{ "message": "Password reset successfully" }
+```
+Returns `400` if the token is invalid or expired. Token is single-use — cleared after a successful reset.
+
+---
+
+## Categories (user-owned)
+
+### List categories
+`GET /categories` — protected
+
+### Create category
+`POST /categories` — protected
+```json
+{ "name": "Food", "color": "#E8B4A0" }
+```
+
+### Update category
+`PUT /categories/:id` — protected
+
+### Delete category
+`DELETE /categories/:id` — protected
+
+---
+
+## Transactions (Expenses)
+
+Route prefix is `/expenses` (unchanged internally — labeled "Transactions" in the UI since it covers both expense and income entries).
+
+### List transactions
+`GET /expenses` — protected
+
+**Query params** (all optional)
+| Param | Type | Description |
+|---|---|---|
+| `categoryId` | string | Filter by category |
+| `from` | date | Start of date range |
+| `to` | date | End of date range |
+| `type` | `EXPENSE` \| `INCOME` | Filter by type |
+
+### Create transaction
+`POST /expenses` — protected
+```json
+{ "amount": 500, "description": "Groceries", "type": "EXPENSE", "categoryId": "uuid", "date": "2026-09-10" }
+```
+`amount` must be between 0.01 and 10,000,000.
+
+### Update transaction
+`PUT /expenses/:id` — protected
+
+### Delete transaction
+`DELETE /expenses/:id` — protected
+
+### Export as CSV
+`GET /expenses/export` — protected
+Accepts the same query params as the list endpoint (filters carry over to the export). Returns a downloadable `.csv` file with columns: Date, Description, Category, Type, Amount.
+
+---
+
+## Budgets
+
+### List budgets
+`GET /budgets` — protected
+
+**Query params:** `month`, `year` (optional)
+
+### Create budget
+`POST /budgets` — protected
+```json
+{ "month": 9, "year": 2026, "limitAmount": 5000, "categoryId": "uuid" }
+```
+`categoryId` is optional — omit for an "overall" (non-category-specific) budget. `limitAmount` must be between 1 and 10,000,000.
+
+### Update budget
+`PUT /budgets/:id` — protected
+
+### Delete budget
+`DELETE /budgets/:id` — protected
+
+---
+
+## Dashboard
+
+### Monthly summary
+`GET /dashboard/summary` — protected
+
+**Response `200`**
 ```json
 {
-  "token": "<JWT_TOKEN>",
-  "user": {
-    "id": "USER_ID",
-    "name": "John Doe",
-    "email": "john@example.com"
+  "income": 25000,
+  "expenses": 3800,
+  "netSavings": 21200,
+  "totalBudget": 8500,
+  "remainingBudget": 4700,
+  "categoryBreakdown": [{ "name": "Food", "amount": 500 }],
+  "recentExpenses": [ /* last 5 transactions */ ]
+}
+```
+Scoped to the current calendar month.
+
+### 6-month trend
+`GET /dashboard/trend` — protected
+
+**Response `200`**
+```json
+[
+  { "month": "Apr", "income": 20000, "expenses": 4200 },
+  { "month": "May", "income": 21000, "expenses": 3900 }
+]
+```
+
+---
+
+## Admin
+
+All routes below require `role: ADMIN`. Non-admin users receive `403 Forbidden`.
+
+### List all users
+`GET /admin/users`
+
+**Response `200`**
+```json
+[
+  {
+    "id": "uuid",
+    "name": "Chung chai",
+    "email": "chai@example.com",
+    "role": "USER",
+    "createdAt": "...",
+    "_count": { "expenses": 12, "budgets": 3, "categories": 5 }
   }
-}
+]
 ```
 
----
-
-## `GET /api/auth/me`
-
-Returns the currently authenticated user's information.
-
-### Authentication
-
-Required.
-
-### Header
-
-```http
-Authorization: Bearer <JWT_TOKEN>
-```
-
----
-
-## `PUT /api/auth/me`
-
-Updates the authenticated user's profile.
-
-### Authentication
-
-Required.
-
-### Request
-
+### System stats
+`GET /admin/stats`
 ```json
-{
-  "name": "Updated Name",
-  "email": "updated@example.com"
-}
+{ "totalUsers": 5, "totalExpenses": 42, "totalBudgets": 8, "totalTracked": 13050 }
 ```
 
----
-
-## `PUT /api/auth/change-password`
-
-Changes the authenticated user's password.
-
-### Authentication
-
-Required.
-
-### Request
-
+### Update a user's role
+`PUT /admin/users/:id/role`
 ```json
-{
-  "currentPassword": "oldPassword",
-  "newPassword": "newPassword123"
-}
+{ "role": "ADMIN" }
 ```
+Logged to the audit log.
 
----
+### List system categories
+`GET /admin/categories`
 
-## `POST /api/auth/forgot-password`
-
-Starts the password recovery process.
-
-### Authentication
-
-Not required.
-
-### Request
-
+### Create system category
+`POST /admin/categories`
 ```json
-{
-  "email": "john@example.com"
-}
+{ "name": "Healthcare" }
 ```
+Immediately propagated to every existing user who doesn't already have a category with that name.
+
+### Toggle (activate/deactivate) a system category
+`PUT /admin/categories/:id/toggle`
+Deactivating removes the category from any user's personal list where it isn't attached to an existing expense or budget; category data on existing transactions is preserved.
+
+### Delete a system category
+`DELETE /admin/categories/:id`
+Removes it from the admin's master list only — does not retroactively remove it from users.
+
+### Activity log
+`GET /admin/activity`
+Returns the 50 most recent audit log entries, newest first.
 
 ---
 
-## `PUT /api/auth/reset-password/:token`
+## Error Response Format
 
-Resets a password using a valid reset token.
-
-### Authentication
-
-Not required.
-
-### URL Parameters
-
-| Parameter | Description          |
-| --------- | -------------------- |
-| `token`   | Password reset token |
-
-### Request
-
+All errors follow the same shape:
 ```json
-{
-  "password": "newPassword123"
-}
+{ "error": "Human-readable message" }
 ```
 
----
-
-# 3. Categories
-
-Base route:
-
-```text
-/api/categories
-```
-
-All endpoints require authentication.
-
-## `GET /api/categories`
-
-Returns categories available to the authenticated user.
-
----
-
-## `POST /api/categories`
-
-Creates a new category.
-
-### Request
-
-```json
-{
-  "name": "Entertainment"
-}
-```
-
----
-
-## `PUT /api/categories/:id`
-
-Updates an existing category.
-
-### URL Parameters
-
-| Parameter | Description |
-| --------- | ----------- |
-| `id`      | Category ID |
-
-### Request
-
-```json
-{
-  "name": "Subscriptions"
-}
-```
-
----
-
-## `DELETE /api/categories/:id`
-
-Deletes a category.
-
-### URL Parameters
-
-| Parameter | Description |
-| --------- | ----------- |
-| `id`      | Category ID |
-
----
-
-# 4. Expenses
-
-Base route:
-
-```text
-/api/expenses
-```
-
-All endpoints require authentication.
-
-## `GET /api/expenses`
-
-Returns expenses belonging to the authenticated user.
-
-### Example
-
-```bash
-curl http://localhost:5000/api/expenses \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN"
-```
-
----
-
-## `GET /api/expenses/export`
-
-Exports the authenticated user's expense data.
-
-### Authentication
-
-Required.
-
----
-
-## `POST /api/expenses`
-
-Creates a new expense.
-
-### Request
-
-```json
-{
-  "amount": 500,
-  "description": "Groceries",
-  "categoryId": "CATEGORY_ID",
-  "date": "2026-09-09"
-}
-```
-
----
-
-## `PUT /api/expenses/:id`
-
-Updates an existing expense.
-
-### URL Parameters
-
-| Parameter | Description |
-| --------- | ----------- |
-| `id`      | Expense ID  |
-
-### Request
-
-```json
-{
-  "amount": 750,
-  "description": "Updated expense"
-}
-```
-
----
-
-## `DELETE /api/expenses/:id`
-
-Deletes an expense.
-
-### URL Parameters
-
-| Parameter | Description |
-| --------- | ----------- |
-| `id`      | Expense ID  |
-
----
-
-# 5. Budgets
-
-Base route:
-
-```text
-/api/budgets
-```
-
-All endpoints require authentication.
-
-## `GET /api/budgets`
-
-Returns budgets belonging to the authenticated user.
-
----
-
-## `POST /api/budgets`
-
-Creates a new budget.
-
-### Example Request
-
-```json
-{
-  "categoryId": "CATEGORY_ID",
-  "amount": 5000,
-  "month": 9,
-  "year": 2026
-}
-```
-
----
-
-## `PUT /api/budgets/:id`
-
-Updates an existing budget.
-
-### URL Parameters
-
-| Parameter | Description |
-| --------- | ----------- |
-| `id`      | Budget ID   |
-
----
-
-## `DELETE /api/budgets/:id`
-
-Deletes an existing budget.
-
-### URL Parameters
-
-| Parameter | Description |
-| --------- | ----------- |
-| `id`      | Budget ID   |
-
----
-
-# 6. Dashboard
-
-Base route:
-
-```text
-/api/dashboard
-```
-
-All endpoints require authentication.
-
-## `GET /api/dashboard/summary`
-
-Returns financial summary information for the authenticated user.
-
----
-
-## `GET /api/dashboard/trend`
-
-Returns spending trend information for the authenticated user.
-
----
-
-# 7. Admin
-
-Base route:
-
-```text
-/api/admin
-```
-
-All admin endpoints require:
-
-* Valid JWT authentication
-* `ADMIN` authorization
-
-## `GET /api/admin/users`
-
-Returns registered users.
-
-### Access
-
-`ADMIN`
-
----
-
-## `GET /api/admin/stats`
-
-Returns application-level statistics.
-
-### Access
-
-`ADMIN`
-
----
-
-## `PUT /api/admin/users/:id/role`
-
-Updates a user's role.
-
-### Access
-
-`ADMIN`
-
-### URL Parameters
-
-| Parameter | Description |
-| --------- | ----------- |
-| `id`      | User ID     |
-
-### Request
-
-```json
-{
-  "role": "ADMIN"
-}
-```
-
----
-
-## `GET /api/admin/activity`
-
-Returns application activity information.
-
-### Access
-
-`ADMIN`
-
----
-
-## `GET /api/admin/categories`
-
-Returns system categories.
-
-### Access
-
-`ADMIN`
-
----
-
-## `POST /api/admin/categories`
-
-Creates a system category.
-
-### Access
-
-`ADMIN`
-
-### Request
-
-```json
-{
-  "name": "New Category"
-}
-```
-
----
-
-## `PUT /api/admin/categories/:id/toggle`
-
-Enables or disables a system category.
-
-### Access
-
-`ADMIN`
-
-### URL Parameters
-
-| Parameter | Description |
-| --------- | ----------- |
-| `id`      | Category ID |
-
----
-
-# HTTP Status Codes
-
-| Status | Meaning                                       |
-| -----: | --------------------------------------------- |
-|  `200` | Request successful                            |
-|  `201` | Resource created                              |
-|  `400` | Bad request                                   |
-|  `401` | Authentication required / invalid credentials |
-|  `403` | Insufficient permissions                      |
-|  `404` | Resource not found                            |
-|  `429` | Too many requests                             |
-|  `500` | Internal server error                         |
-
----
-
-# Security
-
-The API uses several security mechanisms:
-
-* JWT authentication
-* bcrypt password hashing
-* Protected routes
-* Role-based authorization
-* Rate limiting
-* CORS configuration
-* Environment variables for secrets
-* Password-reset tokens
-
-Never expose the following in source control:
-
-```text
-.env
-JWT secrets
-Database credentials
-Email service credentials
-API keys
-```
-
----
-
-# Example API Workflow
-
-A typical user flow looks like this:
-
-```text
-1. Register
-      │
-      ▼
-2. Login
-      │
-      ▼
-3. Receive JWT
-      │
-      ▼
-4. Send JWT with requests
-      │
-      ├──► Categories
-      │
-      ├──► Expenses
-      │
-      ├──► Budgets
-      │
-      └──► Dashboard
-```
-
-An administrator additionally has access to:
-
-```text
-Admin Login
-     │
-     ▼
-JWT + ADMIN role
-     │
-     ▼
-Admin API
- ├── Users
- ├── Statistics
- ├── Activity
- └── Categories
-```
-
----
-
-# Endpoint Reference
-
-| Method | Endpoint                           | Access | Purpose                |
-| ------ | ---------------------------------- | ------ | ---------------------- |
-| GET    | `/api/health`                      | Public | Health check           |
-| POST   | `/api/auth/register`               | Public | Register               |
-| POST   | `/api/auth/login`                  | Public | Login                  |
-| GET    | `/api/auth/me`                     | User   | Get profile            |
-| PUT    | `/api/auth/me`                     | User   | Update profile         |
-| PUT    | `/api/auth/change-password`        | User   | Change password        |
-| POST   | `/api/auth/forgot-password`        | Public | Request password reset |
-| PUT    | `/api/auth/reset-password/:token`  | Public | Reset password         |
-| GET    | `/api/categories`                  | User   | List categories        |
-| POST   | `/api/categories`                  | User   | Create category        |
-| PUT    | `/api/categories/:id`              | User   | Update category        |
-| DELETE | `/api/categories/:id`              | User   | Delete category        |
-| GET    | `/api/expenses`                    | User   | List expenses          |
-| GET    | `/api/expenses/export`             | User   | Export expenses        |
-| POST   | `/api/expenses`                    | User   | Create expense         |
-| PUT    | `/api/expenses/:id`                | User   | Update expense         |
-| DELETE | `/api/expenses/:id`                | User   | Delete expense         |
-| GET    | `/api/budgets`                     | User   | List budgets           |
-| POST   | `/api/budgets`                     | User   | Create budget          |
-| PUT    | `/api/budgets/:id`                 | User   | Update budget          |
-| DELETE | `/api/budgets/:id`                 | User   | Delete budget          |
-| GET    | `/api/dashboard/summary`           | User   | Financial summary      |
-| GET    | `/api/dashboard/trend`             | User   | Spending trends        |
-| GET    | `/api/admin/users`                 | Admin  | List users             |
-| GET    | `/api/admin/stats`                 | Admin  | Application statistics |
-| PUT    | `/api/admin/users/:id/role`        | Admin  | Update user role       |
-| GET    | `/api/admin/activity`              | Admin  | Activity information   |
-| GET    | `/api/admin/categories`            | Admin  | List system categories |
-| POST   | `/api/admin/categories`            | Admin  | Create system category |
-| PUT    | `/api/admin/categories/:id/toggle` | Admin  | Toggle category        |
-
----
-
-# Related Documentation
-
-* [Project README](./README.md)
-* [GitHub Repository](https://github.com/anamikakt-bot/expense-tracker)
-* [Live Application](https://expense-tracker-anamik.vercel.app/)
+**Common status codes**
+| Code | Meaning |
+|---|---|
+| `400` | Bad request — missing/invalid fields |
+| `401` | Missing, invalid, or expired token |
+| `403` | Authenticated, but insufficient role |
+| `404` | Resource not found (or not owned by the requester) |
+| `409` | Conflict (e.g. duplicate email or category name) |
+| `429` | Rate limit exceeded |
+| `500` | Server error |
