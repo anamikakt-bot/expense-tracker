@@ -150,6 +150,7 @@ export default function Expenses() {
   required
   min="0.01"
   max="100000000"
+  step="0.01"
   style={{ ...inputStyle, width: '120px', flex: '1 1 100px' }}
 />
           <input

@@ -158,6 +158,7 @@ const totalRemaining = totalBudgeted - totalSpent;
             required
             min="1"
             max="100000000"
+            step="0.01"
             style={{ ...inputStyle, width: '140px' }}
           />
           <button type="submit" className="btn-primary" style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: 'none', background: 'var(--accent-green)', color: '#fff' }}>
