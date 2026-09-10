@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-
+import { EyeIcon, EyeOffIcon } from '../components/ThemeIcons';
 export default function Settings() {
   const { user, setUser } = useAuth();
   const [profileForm, setProfileForm] = useState({ name: '', email: '' });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [profileMsg, setProfileMsg] = useState('');
   const [passwordMsg, setPasswordMsg] = useState('');
   const [profileError, setProfileError] = useState('');
@@ -94,35 +97,44 @@ export default function Settings() {
         <div className="card">
           <h3 style={{ marginTop: 0 }}>Change Password</h3>
           <form onSubmit={handlePasswordSubmit}>
-            <div className="auth-field">
-              <label>Current Password</label>
-              <input
-                type="password"
-                value={passwordForm.currentPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                required
-              />
-            </div>
-            <div className="auth-field">
-              <label>New Password</label>
-              <input
-                type="password"
-                value={passwordForm.newPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                required
-                minLength={6}
-              />
-            </div>
-            <div className="auth-field">
-              <label>Confirm New Password</label>
-              <input
-                type="password"
-                value={passwordForm.confirmPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                required
-                minLength={6}
-              />
-            </div>
+            <div className="auth-field password-field-wrapper">
+  <label>Current Password</label>
+  <input
+    type={showCurrent ? 'text' : 'password'}
+    value={passwordForm.currentPassword}
+    onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+    required
+  />
+  <button type="button" className="password-toggle-btn" onClick={() => setShowCurrent(!showCurrent)}>
+    {showCurrent ? <EyeOffIcon /> : <EyeIcon />}
+  </button>
+</div>
+            <div className="auth-field password-field-wrapper">
+  <label>New Password</label>
+  <input
+    type={showNew ? 'text' : 'password'}
+    value={passwordForm.newPassword}
+    onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+    required
+    minLength={6}
+  />
+  <button type="button" className="password-toggle-btn" onClick={() => setShowNew(!showNew)}>
+    {showNew ? <EyeOffIcon /> : <EyeIcon />}
+  </button>
+</div>
+            <div className="auth-field password-field-wrapper">
+  <label>Confirm New Password</label>
+  <input
+    type={showConfirm ? 'text' : 'password'}
+    value={passwordForm.confirmPassword}
+    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+    required
+    minLength={6}
+  />
+  <button type="button" className="password-toggle-btn" onClick={() => setShowConfirm(!showConfirm)}>
+    {showConfirm ? <EyeOffIcon /> : <EyeIcon />}
+  </button>
+</div>
             {passwordError && <p style={{ color: '#D9534F', fontSize: '0.85rem' }}>{passwordError}</p>}
             {passwordMsg && <p style={{ color: 'var(--accent-green)', fontSize: '0.85rem' }}>{passwordMsg}</p>}
             <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem' }}>

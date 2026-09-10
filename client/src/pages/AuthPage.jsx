@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Logo } from '../components/ThemeIcons';
+import { EyeIcon, EyeOffIcon } from '../components/ThemeIcons';
 
 export default function AuthPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { login, register } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [mode, setMode] = useState(location.pathname === '/register' ? 'register' : 'login');
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
@@ -87,26 +90,32 @@ export default function AuthPage() {
                 required
               />
             </div>
-            <div className="auth-field">
-              <label>Password</label>
-              <input
-                type="password"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                required
-                minLength={6}
-              />
-            </div>
-            {isRegister && (
-  <div className="auth-field">
+            <div className="auth-field password-field-wrapper">
+  <label>Password</label>
+  <input
+    type={showPassword ? 'text' : 'password'}
+    value={form.password}
+    onChange={(e) => setForm({ ...form, password: e.target.value })}
+    required
+    minLength={6}
+  />
+  <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)}>
+    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+  </button>
+</div>
+{isRegister && (
+  <div className="auth-field password-field-wrapper">
     <label>Confirm Password</label>
     <input
-      type="password"
+      type={showConfirmPassword ? 'text' : 'password'}
       value={form.confirmPassword}
       onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
       required
       minLength={6}
     />
+    <button type="button" className="password-toggle-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+      {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+    </button>
   </div>
 )}
             {!isRegister && (
