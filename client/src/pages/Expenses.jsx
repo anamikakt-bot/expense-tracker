@@ -12,7 +12,7 @@ export default function Expenses() {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const { showToast } = useToast();
 
-  const [form, setForm] = useState({ amount: '', description: '', categoryId: '', type: 'EXPENSE', date: '' });
+  const [form, setForm] = useState({ amount: '', description: '', categoryId: '', type: '', date: '' });
   const [editingId, setEditingId] = useState(null);
 
   const [filters, setFilters] = useState({ categoryId: '', from: '', to: '' });
@@ -84,7 +84,7 @@ export default function Expenses() {
       await api.post('/expenses', form);
       showToast('Expense added');
     }
-    setForm({ amount: '', description: '', categoryId: '', type: 'EXPENSE', date: '' });
+    setForm({ amount: '', description: '', categoryId: '', type: '', date: '' });
     setEditingId(null);
     fetchExpenses();
   } catch (err) {
@@ -127,7 +127,7 @@ export default function Expenses() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-  <h1 style={{ margin: 0 }}>Expenses</h1>
+  <h1 style={{ margin: 0 }}>Transactions</h1>
   <div style={{ display: 'flex', gap: '0.5rem' }}>
     <button onClick={handleExport} className="icon-btn" style={{ border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.9rem', background: 'transparent', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
       Export CSV
@@ -139,7 +139,7 @@ export default function Expenses() {
 </div>
 
       <div className="card" style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ marginTop: 0 }}>{editingId ? 'Edit Expense' : 'Add Expense'}</h3>
+        <h3 style={{ marginTop: 0 }}>{editingId ? 'Edit Transaction' : 'Add Transaction'}</h3>
         <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <input
   type="number"
@@ -167,14 +167,16 @@ export default function Expenses() {
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
-          <select
-            value={form.type}
-            onChange={(e) => setForm({ ...form, type: e.target.value })}
-            style={inputStyle}
-          >
-            <option value="EXPENSE">Expense</option>
-            <option value="INCOME">Income</option>
-          </select>
+  <select
+    value={form.type}
+    onChange={(e) => setForm({ ...form, type: e.target.value })}
+    required
+    style={inputStyle}
+  >
+    <option value="" disabled>Type</option>
+    <option value="EXPENSE">Expense</option>
+    <option value="INCOME">Income</option>
+  </select>
           <input
             type="date"
             value={form.date}
@@ -187,7 +189,7 @@ export default function Expenses() {
           {editingId && (
             <button
               type="button"
-              onClick={() => { setEditingId(null); setForm({ amount: '', description: '', categoryId: '', type: 'EXPENSE', date: '' }); }}
+              onClick={() => { setEditingId(null); setForm({ amount: '', description: '', categoryId: '', type: '', date: '' }); }}
               className="icon-btn"
               style={{ padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }}
             >

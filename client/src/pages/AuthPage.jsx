@@ -9,7 +9,7 @@ export default function AuthPage() {
   const { login, register } = useAuth();
 
   const [mode, setMode] = useState(location.pathname === '/register' ? 'register' : 'login');
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -27,6 +27,11 @@ export default function AuthPage() {
     e.preventDefault();
     setError('');
     setLoading(true);
+    if (isRegister && form.password !== form.confirmPassword) {
+  setError('Passwords do not match');
+  setLoading(false);
+  return;
+}
     try {
       if (mode === 'register') {
         await register(form.name, form.email, form.password);
@@ -92,6 +97,18 @@ export default function AuthPage() {
                 minLength={6}
               />
             </div>
+            {isRegister && (
+  <div className="auth-field">
+    <label>Confirm Password</label>
+    <input
+      type="password"
+      value={form.confirmPassword}
+      onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+      required
+      minLength={6}
+    />
+  </div>
+)}
             {!isRegister && (
               <p style={{ textAlign: 'right', marginTop: '-0.5rem', marginBottom: '1rem' }}>
                 <Link to="/forgot-password" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>

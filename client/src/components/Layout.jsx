@@ -14,7 +14,7 @@ export default function Layout() {
 
   const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: <HomeIcon /> },
-  { path: '/expenses', label: 'Expenses', icon: <WalletIcon /> },
+  { path: '/expenses', label: 'Transactions', icon: <WalletIcon /> },
   { path: '/budgets', label: 'Budgets', icon: <TargetIcon /> },
   { path: '/settings', label: 'Settings', icon: <SettingsIcon /> },
  

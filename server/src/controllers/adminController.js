@@ -149,6 +149,21 @@ exports.toggleSystemCategory = async (req, res) => {
       data: { active: !existing.active }
     });
 
+    if (!category.active) {
+      const matchingCategories = await prisma.category.findMany({
+        where: { name: category.name },
+        include: { _count: { select: { expenses: true, budgets: true } } }
+      });
+
+      const deletableIds = matchingCategories
+        .filter((c) => c._count.expenses === 0 && c._count.budgets === 0)
+        .map((c) => c.id);
+
+      if (deletableIds.length > 0) {
+        await prisma.category.deleteMany({ where: { id: { in: deletableIds } } });
+      }
+    }
+
     res.json(category);
   } catch (err) {
     console.error(err);
