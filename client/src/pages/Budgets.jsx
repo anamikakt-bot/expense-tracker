@@ -173,7 +173,7 @@ const totalRemaining = totalBudgeted - totalSpent;
         </form>
       </div>
       {loading ? (
-  <p>Loading budgets...</p>
+  <LoadingSpinner label="Loading budgets..." />
 ) : error ? (
   <p style={{ color: 'red' }}>{error}</p>
 ) : budgets.length === 0 ? (

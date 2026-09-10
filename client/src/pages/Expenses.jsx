@@ -252,7 +252,7 @@ export default function Expenses() {
 
       <div className="card">
         {loading ? (
-          <p>Loading expenses...</p>
+          <LoadingSpinner label="Loading transactions..." />
         ) : error ? (
           <p style={{ color: 'red' }}>{error}</p>
         ) : expenses.length === 0 ? (

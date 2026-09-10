@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LabelList, Cell } from 'recharts';
-
+import LoadingSpinner from '../components/LoadingSpinner';
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,7 +21,7 @@ export default function Dashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p>Loading dashboard...</p>;
+  if (loading) return <LoadingSpinner label="Loading your dashboard..." fullPage />;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
   if (!data) return null;
 

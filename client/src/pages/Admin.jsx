@@ -80,7 +80,7 @@ const confirmRoleToggle = async () => {
 
   const inputStyle = { padding: '0.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-card)', color: 'var(--text-primary)' };
 
-  if (loading) return <p>Loading admin panel...</p>;
+  if (loading) return <LoadingSpinner label="Loading admin panel..." fullPage />;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
   const tabs = [

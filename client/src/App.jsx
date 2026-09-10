@@ -12,12 +12,13 @@ import Settings from './pages/Settings';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import { ToastProvider } from './context/ToastContext';
+import LoadingSpinner from './components/LoadingSpinner';
 import Admin from './pages/Admin';
 
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <LoadingSpinner fullPage />;
   return user ? children : <Navigate to="/login" />;
 }
 
