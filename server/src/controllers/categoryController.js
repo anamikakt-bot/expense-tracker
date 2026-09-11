@@ -3,8 +3,17 @@ const prisma = new PrismaClient();
 
 exports.getCategories = async (req, res) => {
   try {
+    const inactiveSystemCategories = await prisma.systemCategory.findMany({
+      where: { active: false },
+      select: { name: true }
+    });
+    const inactiveNames = inactiveSystemCategories.map((c) => c.name);
+
     const categories = await prisma.category.findMany({
-      where: { userId: req.userId },
+      where: {
+        userId: req.userId,
+        name: { notIn: inactiveNames.length > 0 ? inactiveNames : [''] }
+      },
       orderBy: { name: 'asc' }
     });
     res.json(categories);
